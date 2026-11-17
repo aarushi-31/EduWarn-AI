@@ -1,0 +1,134 @@
+/* Custom Stylesheet for AI-Based Student Performance Prediction System */
+/* Department of Computer Science & Engineering (AIML), JSS University, Noida */
+
+:root {
+    --primary-color: #1a365d;
+    --primary-accent: #2b6cb0;
+    --secondary-color: #2d3748;
+    --bg-light: #f7fafc;
+    --card-border: #e2e8f0;
+    --risk-high: #e53e3e;
+    --risk-med: #dd6b20;
+    --risk-low: #38a169;
+}
+
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-light);
+    color: #2d3748;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.brand-badge {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    margin-left: 0.5rem;
+    font-weight: normal;
+}
+
+/* Metric Cards */
+.metric-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Risk Badges */
+.badge-risk-high {
+    background-color: #fed7d7;
+    color: #9b2c2c;
+    border: 1px solid #feb2b2;
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+}
+
+.badge-risk-medium {
+    background-color: #feebc8;
+    color: #9c4221;
+    border: 1px solid #fbd38d;
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+}
+
+.badge-risk-low {
+    background-color: #c6f6d5;
+    color: #22543d;
+    border: 1px solid #9ae6b4;
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+}
+
+/* Table Enhancements */
+.table th {
+    background-color: #edf2f7;
+    color: #4a5568;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+    border-top: none;
+}
+
+/* Quick Credential Card */
+.cred-card {
+    cursor: pointer;
+    background: #edf2f7;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: background 0.2s ease;
+}
+
+.cred-card:hover {
+    background: #e2e8f0;
+}
+
+/* Footer */
+footer {
+    background-color: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    color: #718096;
+}
+
+/* Printable Report */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    body {
+        background-color: #ffffff;
+    }
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+}

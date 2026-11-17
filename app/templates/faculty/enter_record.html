@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Enter Academic Record{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-2">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3 border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="fa-solid fa-pen-to-square me-2 text-primary"></i>Enter Student Academic Record
+                    </h5>
+                    <a href="{{ url_for('faculty.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Back
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('faculty.enter_record') }}">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-secondary">Class / Section</label>
+                            <select id="class_select" class="form-select form-select-sm" onchange="window.location.href='{{ url_for('faculty.enter_record') }}?class_id=' + this.value">
+                                {% for c in classes %}
+                                <option value="{{ c.class_id }}" {% if c.class_id == selected_class_id %}selected{% endif %}>
+                                    {{ c.display_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-secondary">Subject</label>
+                            <select name="subject_id" class="form-select form-select-sm" required>
+                                {% for s in subjects %}
+                                <option value="{{ s.subject_id }}">{{ s.subject_code }} - {{ s.subject_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-secondary">Assessment Cycle</label>
+                            <select name="cycle_id" class="form-select form-select-sm" required>
+                                {% for cyc in cycles %}
+                                <option value="{{ cyc.cycle_id }}">{{ cyc.cycle_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary">Select Student</label>
+                        <select name="student_id" class="form-select" required>
+                            <option value="">-- Choose Student from Roster --</option>
+                            {% for st in students %}
+                            <option value="{{ st.student_id }}">
+                                {{ st.roll_no }} - {{ st.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 mb-4 border">
+                        <h6 class="fw-bold text-dark small mb-3">
+                            <i class="fa-solid fa-sliders me-1 text-primary"></i> Academic Input Parameters (ML Features)
+                        </h6>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary">Attendance Percentage (0 - 100%)</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" min="0" max="100" name="attendance_pct" class="form-control" placeholder="e.g. 78.5" required>
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <div class="form-text small">Mandatory minimum university requirement is 75%.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary">Internal Exam Marks (Max 30)</label>
+                                <input type="number" step="0.5" min="0" max="30" name="internal_marks" class="form-control" placeholder="e.g. 21.0" required>
+                                <div class="form-text small">Consolidated score from class tests & sessional exams.</div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-secondary">Assignment Score (Max 25)</label>
+                                <input type="number" step="0.5" min="0" max="25" name="assignment_score" class="form-control" placeholder="e.g. 19.5" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-secondary">Class Participation (Max 20)</label>
+                                <input type="number" step="0.5" min="0" max="20" name="participation_score" class="form-control" placeholder="e.g. 15.0" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-secondary">Prev Semester % (0 - 100)</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" min="0" max="100" name="prev_sem_marks" class="form-control" placeholder="e.g. 74.0" required>
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('faculty.dashboard') }}" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                            <i class="fa-solid fa-cloud-arrow-up me-2"></i> Save Record & Run ML Inference
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

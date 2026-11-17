@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk CSV Upload{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-2">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-file-csv me-2 text-success"></i>Bulk CSV Upload for Batch Assessment
+                </h5>
+                <a href="{{ url_for('faculty.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </a>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+                    <i class="fa-solid fa-circle-info fs-4 me-3"></i>
+                    <div>
+                        Upload a batch CSV file to update academic records and automatically trigger ML risk predictions for all listed students.
+                        <div class="mt-1">
+                            <a href="{{ url_for('faculty.download_csv_sample') }}" class="fw-bold text-decoration-none">
+                                <i class="fa-solid fa-download me-1"></i> Download Sample CSV Template
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('faculty.upload_csv') }}" enctype="multipart/form-data">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-secondary">Subject</label>
+                            <select name="subject_id" class="form-select" required>
+                                {% for s in subjects %}
+                                <option value="{{ s.subject_id }}">{{ s.subject_code }} - {{ s.subject_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-secondary">Target Assessment Cycle</label>
+                            <select name="cycle_id" class="form-select" required>
+                                {% for cyc in cycles %}
+                                <option value="{{ cyc.cycle_id }}">{{ cyc.cycle_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary">Select Academic CSV File</label>
+                        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 mb-4 border">
+                        <h6 class="fw-bold text-dark small mb-2"><i class="fa-solid fa-table-list me-1"></i> Required CSV Format Specification</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered bg-white small mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>roll_no</th>
+                                        <th>attendance_pct</th>
+                                        <th>internal_marks</th>
+                                        <th>assignment_score</th>
+                                        <th>participation_score</th>
+                                        <th>prev_sem_marks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>22AIML001</code></td>
+                                        <td><code>52.0</code></td>
+                                        <td><code>11.5</code></td>
+                                        <td><code>9.0</code></td>
+                                        <td><code>7.0</code></td>
+                                        <td><code>48.0</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('faculty.dashboard') }}" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-success px-4 fw-semibold shadow-sm">
+                            <i class="fa-solid fa-upload me-2"></i> Upload & Process Predictions
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

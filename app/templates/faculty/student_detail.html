@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Student Analysis: {{ profile.student.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-3 no-print">
+    <a href="{{ url_for('faculty.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Roster
+    </a>
+</div>
+
+<!-- Header Profile Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div class="d-flex align-items-center mb-3 mb-md-0">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                    {{ profile.student.name[:1] }}
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0">{{ profile.student.name }}</h4>
+                    <div class="text-muted small">
+                        <strong>Roll No:</strong> {{ profile.student.roll_no }} |
+                        <strong>Class:</strong> {{ profile.student.academic_class.display_name }} |
+                        <strong>Email:</strong> {{ profile.student.user.email }}
+                    </div>
+                </div>
+            </div>
+
+            {% if profile.latest_prediction %}
+            <div class="text-md-end">
+                <div class="small text-muted mb-1">Predicted Academic Standing ({{ profile.latest_prediction.cycle.cycle_name }})</div>
+                <span class="badge-risk-{{ profile.latest_prediction.risk_category.lower() }} fs-6">
+                    <i class="fa-solid {% if profile.latest_prediction.risk_category == 'High' %}fa-triangle-exclamation{% elif profile.latest_prediction.risk_category == 'Medium' %}fa-clock-rotate-left{% else %}fa-check{% endif %} me-1"></i>
+                    {{ profile.latest_prediction.risk_category }} Risk
+                </span>
+                <div class="small text-muted mt-1">
+                    Continuous Risk Index: <strong>{{ "%.3f"|format(profile.latest_prediction.risk_score) }}</strong> / 1.000
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Key Contributing Factors -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-magnifying-glass-chart me-2 text-primary"></i>Key Contributing Factors
+                </h5>
+                <p class="text-muted small mb-0">Feature attribution explaining why the model predicted this risk tier</p>
+            </div>
+            <div class="card-body p-0">
+                {% if profile.latest_prediction and profile.latest_prediction.factors %}
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-3">Academic Feature</th>
+                                <th>Weight</th>
+                                <th class="pe-3">Diagnostic Observation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for factor in profile.latest_prediction.factors %}
+                            <tr>
+                                <td class="ps-3 fw-semibold">
+                                    {{ factor.feature_name }}
+                                </td>
+                                <td>
+                                    {% if factor.contribution > 0.25 %}
+                                        <span class="badge bg-danger">Critical (+{{ "%.2f"|format(factor.contribution) }})</span>
+                                    {% elif factor.contribution > 0 %}
+                                        <span class="badge bg-warning text-dark">Warning (+{{ "%.2f"|format(factor.contribution) }})</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Positive ({{ "%.2f"|format(factor.contribution) }})</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-3 small text-secondary">
+                                    {% if factor.feature_name == 'Attendance Percentage' %}
+                                        Attendance level impacts detention risk directly.
+                                    {% elif factor.feature_name == 'Internal Examination Marks' %}
+                                        Internal test performance indicates subject grasp.
+                                    {% elif factor.feature_name == 'Assignment Submissions' %}
+                                        Assignment scores reflect continuous engagement.
+                                    {% elif factor.feature_name == 'Class Participation' %}
+                                        Active lab/lecture participation.
+                                    {% else %}
+                                        Prior semester foundation standing.
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-4 text-center text-muted">No explainability factors available for this cycle.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Improvement Suggestions -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-lightbulb me-2 text-warning"></i>Actionable Improvement Guidance
+                </h5>
+                <p class="text-muted small mb-0">Tailored recommendations to mitigate identified risk indicators</p>
+            </div>
+            <div class="card-body p-4">
+                {% if profile.latest_prediction and profile.latest_prediction.suggestions %}
+                <ul class="list-group list-group-flush">
+                    {% for sug in profile.latest_prediction.suggestions %}
+                    <li class="list-group-item d-flex align-items-start px-0 py-3">
+                        <i class="fa-solid fa-circle-arrow-right text-primary mt-1 me-3 fs-5"></i>
+                        <div>
+                            <span class="fw-semibold text-dark">{{ sug.suggestion_text }}</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="text-center text-muted py-4">No specific recommendations recorded.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historical Progression Across Assessment Cycles -->
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-timeline me-2 text-secondary"></i>Assessment Cycle History
+                </h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-3">Cycle</th>
+                            <th>Attendance</th>
+                            <th>Internals (30)</th>
+                            <th>Assignments (25)</th>
+                            <th>Participation (20)</th>
+                            <th>Prev Sem %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in profile.records %}
+                        <tr>
+                            <td class="ps-3 fw-bold text-primary">{{ r.cycle.cycle_name }}</td>
+                            <td><span class="fw-semibold {% if r.attendance_pct < 75 %}text-danger{% else %}text-success{% endif %}">{{ "%.1f"|format(r.attendance_pct) }}%</span></td>
+                            <td>{{ "%.1f"|format(r.internal_marks) }}</td>
+                            <td>{{ "%.1f"|format(r.assignment_score) }}</td>
+                            <td>{{ "%.1f"|format(r.participation_score) }}</td>
+                            <td>{{ "%.1f"|format(r.prev_sem_marks) }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-chart-column me-2 text-info"></i>Performance Trajectory
+                </h5>
+            </div>
+            <div class="card-body p-3" style="height: 250px;">
+                <canvas id="student-history-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    initStudentHistoryChart('student-history-canvas', {{ profile.student.student_id }});
+});
+</script>
+{% endblock %}

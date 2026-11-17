@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}My Academic Standing{% endblock %}
+
+{% block content %}
+<!-- Welcome & Status Banner -->
+<div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+    <div class="card-body p-4 p-md-5 bg-white">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill mb-2 fw-semibold">
+                    Student Academic Self-Service Portal
+                </span>
+                <h2 class="fw-bold text-dark mb-1">Hello, {{ profile.student.name }}!</h2>
+                <p class="text-muted mb-0">
+                    <strong>Roll No:</strong> {{ profile.student.roll_no }} |
+                    <strong>Class:</strong> {{ profile.student.academic_class.display_name }} |
+                    <strong>Department:</strong> CSE (AIML)
+                </p>
+            </div>
+
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                {% if profile.latest_prediction %}
+                <div class="p-3 bg-light rounded-3 border d-inline-block text-center shadow-sm" style="min-width: 220px;">
+                    <div class="small text-muted fw-bold text-uppercase mb-1">Predicted Standing ({{ profile.latest_prediction.cycle.cycle_name }})</div>
+                    <span class="badge-risk-{{ profile.latest_prediction.risk_category.lower() }} fs-5 px-3 py-2">
+                        <i class="fa-solid {% if profile.latest_prediction.risk_category == 'High' %}fa-triangle-exclamation{% elif profile.latest_prediction.risk_category == 'Medium' %}fa-clock-rotate-left{% else %}fa-check{% endif %} me-1"></i>
+                        {{ profile.latest_prediction.risk_category }} Risk
+                    </span>
+                    <div class="small text-muted mt-2">
+                        Continuous Risk Index: <strong>{{ "%.2f"|format(profile.latest_prediction.risk_score * 100) }}%</strong>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-secondary mb-0">Predictions pending for current cycle.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Academic Metrics Cards -->
+{% if profile.records %}
+{% set latest_rec = profile.records[-1] %}
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="card metric-card bg-white p-3 border-start border-4 {% if latest_rec.attendance_pct < 75 %}border-danger{% else %}border-success{% endif %}">
+            <span class="text-muted small fw-semibold text-uppercase">Attendance</span>
+            <div class="metric-value {% if latest_rec.attendance_pct < 75 %}text-danger{% else %}text-success{% endif %}">
+                {{ "%.1f"|format(latest_rec.attendance_pct) }}%
+            </div>
+            <div class="small {% if latest_rec.attendance_pct < 75 %}text-danger fw-bold{% else %}text-muted{% endif %} mt-1">
+                {% if latest_rec.attendance_pct < 75 %}Below 75% threshold!{% else %}Satisfies requirement{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-md-3">
+        <div class="card metric-card bg-white p-3 border-start border-4 border-primary">
+            <span class="text-muted small fw-semibold text-uppercase">Internal Marks</span>
+            <div class="metric-value text-primary">{{ "%.1f"|format(latest_rec.internal_marks) }} <span class="fs-6 text-muted">/ 30</span></div>
+            <div class="small text-muted mt-1">Recent sessional assessment</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-md-3">
+        <div class="card metric-card bg-white p-3 border-start border-4 border-info">
+            <span class="text-muted small fw-semibold text-uppercase">Assignment Score</span>
+            <div class="metric-value text-info">{{ "%.1f"|format(latest_rec.assignment_score) }} <span class="fs-6 text-muted">/ 25</span></div>
+            <div class="small text-muted mt-1">Continuous lab evaluations</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-md-3">
+        <div class="card metric-card bg-white p-3 border-start border-4 border-secondary">
+            <span class="text-muted small fw-semibold text-uppercase">Prior Sem Score</span>
+            <div class="metric-value text-secondary">{{ "%.1f"|format(latest_rec.prev_sem_marks) }}%</div>
+            <div class="small text-muted mt-1">Cumulative past performance</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Diagnostic Insights & Improvement Guidance -->
+<div class="row g-4 mb-4">
+    <!-- Key Factors Explaining Prediction -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-magnifying-glass-chart me-2 text-primary"></i>Why Did AI Predict This Risk Level?
+                </h5>
+                <p class="text-muted small mb-0">Transparency into model parameters driving your evaluation</p>
+            </div>
+            <div class="card-body p-0">
+                {% if profile.latest_prediction and profile.latest_prediction.factors %}
+                <ul class="list-group list-group-flush">
+                    {% for factor in profile.latest_prediction.factors %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <div>
+                            <div class="fw-semibold text-dark">{{ factor.feature_name }}</div>
+                            <small class="text-muted">
+                                {% if factor.contribution > 0.2 %}
+                                High negative influence on academic safety.
+                                {% elif factor.contribution > 0 %}
+                                Minor caution factor.
+                                {% else %}
+                                Positive contributing factor.
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div>
+                            {% if factor.contribution > 0.25 %}
+                                <span class="badge bg-danger">Critical Concern</span>
+                            {% elif factor.contribution > 0 %}
+                                <span class="badge bg-warning text-dark">Needs Attention</span>
+                            {% else %}
+                                <span class="badge bg-success">Strong</span>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="p-4 text-center text-muted">No diagnostic factors logged.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actionable Improvement Suggestions -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-lightbulb me-2 text-warning"></i>Recommended Action Plan
+                </h5>
+                <p class="text-muted small mb-0">Concrete steps you should take to improve your academic standing</p>
+            </div>
+            <div class="card-body p-4">
+                {% if profile.latest_prediction and profile.latest_prediction.suggestions %}
+                <ul class="list-group list-group-flush">
+                    {% for sug in profile.latest_prediction.suggestions %}
+                    <li class="list-group-item d-flex align-items-start px-0 py-3">
+                        <i class="fa-solid fa-check-circle text-primary mt-1 me-3 fs-5"></i>
+                        <div>
+                            <span class="text-dark">{{ sug.suggestion_text }}</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="text-center text-muted py-4">No active recommendations. Keep up the good work!</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assessment History -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="fw-bold mb-0 text-dark">
+            <i class="fa-solid fa-clock-rotate-left me-2 text-secondary"></i>My Academic History Across Cycles
+        </h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-3">Assessment Cycle</th>
+                    <th>Attendance</th>
+                    <th>Internal Marks</th>
+                    <th>Assignments</th>
+                    <th>Participation</th>
+                    <th>Risk Standing</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in profile.records %}
+                <tr>
+                    <td class="ps-3 fw-bold text-primary">{{ r.cycle.cycle_name }}</td>
+                    <td>
+                        <span class="fw-semibold {% if r.attendance_pct < 75 %}text-danger{% else %}text-success{% endif %}">
+                            {{ "%.1f"|format(r.attendance_pct) }}%
+                        </span>
+                    </td>
+                    <td>{{ "%.1f"|format(r.internal_marks) }} / 30</td>
+                    <td>{{ "%.1f"|format(r.assignment_score) }} / 25</td>
+                    <td>{{ "%.1f"|format(r.participation_score) }} / 20</td>
+                    <td>
+                        {% set match_pred = None %}
+                        {% for p in profile.predictions %}
+                            {% if p.cycle_id == r.cycle_id %}{% set match_pred = p %}{% endif %}
+                        {% endfor %}
+                        {% if match_pred %}
+                            <span class="badge-risk-{{ match_pred.risk_category.lower() }}">{{ match_pred.risk_category }} Risk</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Uncalculated</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
